@@ -1,0 +1,24 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node
+    restart: unless-stopped
+    env_file:
+      - .env.local
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+    volumes:
+      - .:/home/node/app
+      - node_modules:/home/node/app/node_modules
+
+volumes:
+  node_modules:
+
