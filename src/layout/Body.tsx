@@ -4,9 +4,8 @@ type BodyProps = {
 
 function Body(props: BodyProps) {
     return (
-        <div className="px-10 pt-24 bg-gray-100 flex-grow">
+        <div className="bg-gray-100 h-screen w-screen">
             {props.children}
-            
         </div>
         
     );

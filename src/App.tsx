@@ -1,64 +1,14 @@
 import { Component } from 'react';
 import { AuthContext, AuthContextProps, useAuth, withAuth } from 'react-oidc-context';
-import { 
-  Header,
-  Body,
-  Footer,
-  pages,
-  ModuleNavBar
-} from './layout';
-import UserRoleSwitcherProvider from './providers/user-role-switcher/UserRoleSwitcherProvider';
-
-
-
-function AuthComponent() {
-  const auth = useAuth();
-
-  switch (auth.activeNavigator) {
-    case "signinSilent":
-      return (<pages.SigningIn />);
-    case "signoutRedirect":
-      return (<pages.SigningOut />);
-  }
-
-  if (auth.isLoading) {
-    return (<pages.AuthLoading />);
-  }
-
-  if (auth.error) {
-    return (<pages.AuthError />);
-  }
-
-  if (auth.isAuthenticated) {
-    return (<pages.Home />);
-  }
-
-  return (<pages.Welcome />);
-}
+import { Body, HomePage } from './layout';
+import MQTTComponent from './layout/MQTTComponent';
+import Dashboard from './layout/MQTTComponent';
 
 class App extends Component <any> {
 
   constructor(props: any){
     super(props);
-
-    window.addEventListener("storage", this.onStorageUpdate);
-
-    console.log("Rendering app...")
-    console.log(props);
-
   }
-
-  onStorageUpdate = (e: any) => {
-    const { key, newValue } = e;
-    if (key === "isAuthenticated") {
-      if((this.props.user === null) && (newValue === 'true')) {
-        this.props.signinRedirect();
-      }
-      else if(this.props.user !== null && newValue === "false"){
-        this.props.signoutRedirect();
-      }
-    }
-  };
 
   componentDidUpdate(prevProps: any, prevState: any) {
 
@@ -88,32 +38,15 @@ class App extends Component <any> {
     }
   }
 
-  componentWillUnmount(): void {
-    window.removeEventListener("storage", this.onStorageUpdate);
-  }
-
   render() {
 
-    return (
-          <AuthContext.Consumer>
-            {(_auth: AuthContextProps | undefined) => (
-              <UserRoleSwitcherProvider value={_auth}>
-                <div className='min-h-screen flex flex-col'>
-                  <Header />
-                  
-                  {/* {this.props.isAuthenticated? <ModuleNavBar/>:<></>}  */}
-                  <Body>
-                  {/* <StickyNavBar /> */}
-
-                    <AuthComponent />
-                  </Body>
-                  <Footer />    
-                </div>
-              </UserRoleSwitcherProvider>
-            )}
-          </AuthContext.Consumer>
-        )
+    console.log("rendering asdasdsa")
+    return (<>
+    <Body>
+    {/* <HomePage joinEvent={(eventCode, playerName) => {console.log("hello")}}/> */}
+    <MQTTComponent event_id={'KIKO'} player_id={"6418b74d938f694ed61a56aa"}/>
+    </Body></>)
   }
 }
 
-export default  withAuth(App); 
+export default  App; 
