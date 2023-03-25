@@ -4,6 +4,7 @@
 import type { GameEventDocument } from '../models/GameEventDocument';
 import type { JoiningPlayer } from '../models/JoiningPlayer';
 import type { PlayerDocument } from '../models/PlayerDocument';
+import type { TaskDocument } from '../models/TaskDocument';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -146,13 +147,13 @@ export class DefaultService {
      * Get Current Task Of Player
      * @param eventCode
      * @param playerId
-     * @returns any Successful Response
+     * @returns TaskDocument Successful Response
      * @throws ApiError
      */
     public getCurrentTaskOfPlayerEventsEventCodePlayersPlayerIdCurrentTaskGet(
         eventCode: string,
         playerId: string,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<TaskDocument> {
         return this.httpRequest.request({
             method: 'GET',
             url: '/events/{event_code}/players/{player_id}/current_task',
