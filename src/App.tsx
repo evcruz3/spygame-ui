@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, useEffect } from 'react';
 import { AuthContext, AuthContextProps, useAuth, withAuth } from 'react-oidc-context';
 import { Body, HomePage } from './layout';
 import MQTTComponent from './layout/MQTTComponent';
@@ -38,13 +38,17 @@ class App extends Component <any> {
     }
   }
 
+  random_users = ["6418b74d938f694ed61a56aa", "6418b76a938f694ed61a56ab", "6418b772938f694ed61a56ac"]
+  randomIndex = Math.floor(Math.random() * this.random_users.length)
+
   render() {
+
 
     console.log("rendering asdasdsa")
     return (<>
     <Body>
     {/* <HomePage joinEvent={(eventCode, playerName) => {console.log("hello")}}/> */}
-    <MQTTComponent event_id={'KIKO'} player_id={"6418b74d938f694ed61a56aa"}/>
+      <MQTTComponent event_id={'KIKO'} player_id={this.random_users[this.randomIndex]}/>
     </Body></>)
   }
 }

@@ -6,12 +6,14 @@ import type { OpenAPIConfig } from './core/OpenAPI';
 import { AxiosHttpRequest } from './core/AxiosHttpRequest';
 
 import { DefaultService } from './services/DefaultService';
+import { EventsService } from './services/EventsService';
 
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 
 export class APIClient {
 
     public readonly default: DefaultService;
+    public readonly events: EventsService;
 
     public readonly request: BaseHttpRequest;
 
@@ -29,6 +31,7 @@ export class APIClient {
         });
 
         this.default = new DefaultService(this.request);
+        this.events = new EventsService(this.request);
     }
 }
 

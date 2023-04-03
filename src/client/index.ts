@@ -34,3 +34,4 @@ export { $TaskTypeEnum } from './schemas/$TaskTypeEnum';
 export { $ValidationError } from './schemas/$ValidationError';
 
 export { DefaultService } from './services/DefaultService';
+export { EventsService } from './services/EventsService';
