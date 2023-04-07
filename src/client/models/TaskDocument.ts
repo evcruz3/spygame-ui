@@ -53,6 +53,10 @@ export type TaskDocument = {
      * The current state of the task
      */
     status: TaskStatusEnum;
+    /**
+     * Allow kill, field used by diamond task, default to True
+     */
+    allow_kill: boolean;
     _id?: string;
 };
 

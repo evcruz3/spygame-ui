@@ -90,6 +90,34 @@ export class EventsService {
     }
 
     /**
+     * Kill None In Task
+     * @param eventCode
+     * @param taskCode
+     * @param requestBody
+     * @returns TaskDocument Successful Response
+     * @throws ApiError
+     */
+    public killNoneInTaskEventsEventCodeTasksTaskCodeNoKillPost(
+        eventCode: string,
+        taskCode: string,
+        requestBody: PlayerDocument,
+    ): CancelablePromise<TaskDocument> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/events/{event_code}/tasks/{task_code}/no_kill',
+            path: {
+                'event_code': eventCode,
+                'task_code': taskCode,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Kill In Task
      * @param eventCode
      * @param taskCode

@@ -16,7 +16,9 @@ export function TaskIsWaitingForParticipantsView(props: {myCurrentTask: TaskDocu
   
     function notJoinTask(task_code: string){
       apiClient.events.notJoinTaskEventsEventCodeTasksTaskCodeNotJoinPost(props.myCurrentTask.event_code, task_code, props.currentProfile!)
-      .then((data) => console.log(`skipped ${task_code}: `, data))
+      .then((data) => {console.log(`skipped ${task_code}: `, data);
+        props.setMyCurrentTask(null)
+    })
       .catch((error: ApiError) => console.log("Failed to skip task: ", error.body))
     }
 

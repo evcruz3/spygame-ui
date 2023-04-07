@@ -1,30 +1,28 @@
-import { useState, useEffect } from 'react';
+import { forwardRef, useImperativeHandle, useState, useEffect, useRef } from 'react';
 
 interface CountdownProps {
   targetDate: Date;
 }
 
-const Countdown: React.FC<CountdownProps> = ({ targetDate }) => {
-  const [timeLeft, setTimeLeft] = useState<string>('');
+const Countdown = (props: CountdownProps) => {
+  const [timeLeft, setTimeLeft] = useState<number>((props.targetDate.getTime() - new Date().getTime()) / 1000);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const timeUntilTarget = targetDate.getTime() - new Date().getTime();
-      if (timeUntilTarget < 0) {
+      setTimeLeft((props.targetDate.getTime() - new Date().getTime()) / 1000);
+      if (timeLeft <= 0) {
         clearInterval(interval);
-        setTimeLeft('0:0:0:0');
-      } else {
-        const seconds = Math.floor((timeUntilTarget / 1000) % 60).toString().padStart(2, "0");
-        const minutes = Math.floor((timeUntilTarget / 1000 / 60) % 60).toString().padStart(2, "0");
-        // const hours = Math.floor((timeUntilTarget / 1000 / 60 / 60) % 24).toString().padStart(2, "0");
-        // const days = Math.floor(timeUntilTarget / 1000 / 60 / 60 / 24).toString().padStart(2, "0");
-        setTimeLeft(`${minutes}:${seconds}`);
-      }
+        setTimeLeft(0);
+      } 
     }, 1000);
     return () => clearInterval(interval);
-  }, [targetDate]);
+  }, [timeLeft]);
 
-  return <div>{timeLeft}</div>;
+  const seconds = Math.floor((timeLeft) % 60).toString().padStart(2, "0");
+  const minutes = Math.floor((timeLeft / 60) % 60).toString().padStart(2, "0");
+  const display = `${minutes}:${seconds}`
+
+  return <div>{display}</div>;
 };
 
 export default Countdown;

@@ -227,6 +227,8 @@ function MQTTComponent(props: MQTTComponentProps) {
     setParticipationStatus(null)
   }
 
+  console.log("Current participation status: ", participationStatus)
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center text-lg font-bold">MQTT Messages</div>
@@ -234,7 +236,7 @@ function MQTTComponent(props: MQTTComponentProps) {
       <div>Life Remaining: {currentProfile?.lives_left}</div>
       <div className={`p-4 mb-4 rounded-lg shadow-md bg-white flex flex-col items-center justify-center space-y-2`}>
           {myCurrentTask?.status == TaskStatusEnum.WAITING_FOR_PARTICIPANTS ? <TaskIsWaitingForParticipantsView myCurrentTask={myCurrentTask} setMyCurrentTask={setMyCurrentTask!} currentProfile={currentProfile!} participationStatus={participationStatus!} timeStamp={taskTimeStamp.current} />:
-          myCurrentTask?.status == TaskStatusEnum.ONGOING ? 
+          myCurrentTask?.status == TaskStatusEnum.ONGOING && participationStatus == ParticipantStatusEnum.JOINED? 
             <TaskIsOngoingView currentProfile={currentProfile!} myCurrentTask={myCurrentTask} setMyCurrentTask={setMyCurrentTask} timeStamp={taskTimeStamp.current} onTaskFinished={onTaskFinished}/>
           : <></>
           }

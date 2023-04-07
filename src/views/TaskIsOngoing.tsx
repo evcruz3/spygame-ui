@@ -51,7 +51,14 @@ const getRandomSymbol = (): TaskTypeEnum => {
   
 export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurrentTask: TaskDocument, setMyCurrentTask: React.Dispatch<React.SetStateAction<TaskDocument | null | undefined>>, timeStamp: Date, onTaskFinished: (task: TaskDocument) => void}) {
     // const [type, setTaskType] = useState<TaskTypeEnum>(props.myCurrentTask.type)
-    const timeDifference = Math.floor((new Date().getTime() - props.timeStamp.getTime())/1000 % 60)
+    const timeDifference = Math.floor((props.timeStamp.getTime() - new Date(Date.UTC(
+        Number(props.myCurrentTask?.start_time!.substring(0, 4)),
+        Number(props.myCurrentTask?.start_time!.substring(5, 7)) - 1,
+        Number(props.myCurrentTask?.start_time!.substring(8, 10)),
+        Number(props.myCurrentTask?.start_time!.substring(11, 13)),
+        Number(props.myCurrentTask?.start_time!.substring(14, 16)),
+        Number(props.myCurrentTask?.start_time!.substring(17, 19)))).getTime())/1000 % 60)
+    console.log("time difference: ", timeDifference)
     const [isShuffling, setIsShuffling] = useState<boolean>(timeDifference > 7 ? false : true)
     const taskTimeStamp = useRef<Date>(props.timeStamp)
     const [message, setMessage] = useState<string>('')
@@ -71,6 +78,7 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
     const [val, setVal] = useState(0);
     const client = new Client('localhost', 9001, '', 'client-id-' + Math.random());
     const mounted = useRef(false);
+    const [displayAdditionalActions, setDisplayAdditionalActions] = useState<boolean>(props.myCurrentTask.type == TaskTypeEnum.DIAMOND && props.currentProfile.role == PlayerRoleEnum.SPY)
 
     if (effectCalled.current) {
         renderAfterCalled.current = true;
@@ -86,35 +94,35 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
         console.log(payloadObject)
         
         if ("task_document" in payloadObject){
-            // console.log("isTaskDocument")
-            const timeStamp = new Date(Date.UTC(
-                Number(payloadObject.timestamp!.substring(0, 4)),
-                Number(payloadObject.timestamp!.substring(5, 7)) - 1,
-                Number(payloadObject.timestamp!.substring(8, 10)),
-                Number(payloadObject.timestamp!.substring(11, 13)),
-                Number(payloadObject.timestamp!.substring(14, 16)),
-                Number(payloadObject.timestamp!.substring(17, 19))))
-            console.log(timeStamp, " vs ", taskTimeStamp.current)
-
-            if(payloadObject.task_document.status == TaskStatusEnum.FINISHED){
-                console.log("task is finished, mqtt client disconnecting now...")
-                // console.log("mounted? : ", mounted.current)
-                // if(mounted.current == true && client.isConnected() == true)
-                //     client.disconnect()
-                props.onTaskFinished(props.myCurrentTask)
-            } else if(timeStamp >= taskTimeStamp.current){
-            props.setMyCurrentTask(payloadObject.task_document as TaskDocument)
-            taskTimeStamp.current = new Date(Date.UTC(
-                Number(payloadObject.timestamp!.substring(0, 4)),
-                Number(payloadObject.timestamp!.substring(5, 7)) - 1,
-                Number(payloadObject.timestamp!.substring(8, 10)),
-                Number(payloadObject.timestamp!.substring(11, 13)),
-                Number(payloadObject.timestamp!.substring(14, 16)),
-                Number(payloadObject.timestamp!.substring(17, 19))))
-            setMessage(payloadObject.message)
+            if (payloadObject.task_document.task_code == props.myCurrentTask.task_code){
+                const timeStamp = new Date(Date.UTC(
+                    Number(payloadObject.timestamp!.substring(0, 4)),
+                    Number(payloadObject.timestamp!.substring(5, 7)) - 1,
+                    Number(payloadObject.timestamp!.substring(8, 10)),
+                    Number(payloadObject.timestamp!.substring(11, 13)),
+                    Number(payloadObject.timestamp!.substring(14, 16)),
+                    Number(payloadObject.timestamp!.substring(17, 19))))
+                console.log(timeStamp, " vs ", taskTimeStamp.current)
+    
+                if(payloadObject.task_document.status == TaskStatusEnum.FINISHED){
+                    console.log("task is finished, mqtt client disconnecting now...")
+                    // console.log("mounted? : ", mounted.current)
+                    // if(mounted.current == true && client.isConnected() == true)
+                    //     client.disconnect()
+                    props.onTaskFinished(props.myCurrentTask)
+                } else if(timeStamp >= taskTimeStamp.current){
+                props.setMyCurrentTask(payloadObject.task_document as TaskDocument)
+                taskTimeStamp.current = new Date(Date.UTC(
+                    Number(payloadObject.timestamp!.substring(0, 4)),
+                    Number(payloadObject.timestamp!.substring(5, 7)) - 1,
+                    Number(payloadObject.timestamp!.substring(8, 10)),
+                    Number(payloadObject.timestamp!.substring(11, 13)),
+                    Number(payloadObject.timestamp!.substring(14, 16)),
+                    Number(payloadObject.timestamp!.substring(17, 19))))
+                setMessage(payloadObject.message)
+                }
             }
-
-            
+            // console.log("isTaskDocument")
         }
         else {
             console.log(`unknown task document type`)
@@ -172,13 +180,26 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
         };
     }, []);
 
+    function killPlayer(player: PlayerDocument, task_code: string, requester: PlayerDocument){
+        apiClient.events.killInTaskEventsEventCodeTasksTaskCodeKillPlayerIdPost(player.event_code, task_code, player._id!, requester)
+        .then((data) => console.log(`Successfully killed ${player.name}`))
+        .catch((error) => console.log(`Failed to kill ${player.name}, error: `, error))
+    }
+
+    function killNone(task_code: string, requester: PlayerDocument){
+        apiClient.events.killNoneInTaskEventsEventCodeTasksTaskCodeNoKillPost(requester.event_code, task_code, requester)
+        .then((data) => {console.log(`Successfully ended task`)
+            setDisplayAdditionalActions(false)})
+        .catch((error) => console.log(`Failed to end task, error: `, error))
+    }
 
     console.log("joined participants: ", props.myCurrentTask.participants.filter((participant) => participant.status == ParticipantStatusEnum.JOINED))
-    const additional_actions = props.myCurrentTask.type == TaskTypeEnum.DIAMOND && props.currentProfile.role == PlayerRoleEnum.SPY? <>
+    const additional_actions = displayAdditionalActions == true &&  props.myCurrentTask.allow_kill == true? <>
         <div>Who do you want to kill?</div>
         {props.myCurrentTask.participants.filter((participant) => participant.status == ParticipantStatusEnum.JOINED).map((participant) => {
-            return (<div className="flex-row">{(participant.player as PlayerDocument).name} <Button purpose={"link"}>Kill</Button></ div>)
+            return (<div className="flex-row">{(participant.player as PlayerDocument).name} <Button purpose={"link"} onClick={() => {killPlayer(participant.player as PlayerDocument, props.myCurrentTask.task_code, props.currentProfile)}}>Kill</Button></ div>)
         })}
+        <div><Button purpose={"primary"} onClick={() => {killNone(props.myCurrentTask.task_code, props.currentProfile)}}>End Task (Don't Kill Anyone)</Button></div>
     </> : <>
         <div>Current players</div>
         {props.myCurrentTask.participants.filter((participant) => participant.status == ParticipantStatusEnum.JOINED).map((participant) => {
@@ -186,7 +207,7 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
         })}
     </>
 
-    return (
+return (
       <>
         <SymbolDisplay isShuffling={isShuffling} setIsShuffling={setIsShuffling} symbol={props.myCurrentTask.type} />
         {isShuffling == false ? 
@@ -198,7 +219,8 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
                 Number(props.myCurrentTask?.end_time!.substring(8, 10)),
                 Number(props.myCurrentTask?.end_time!.substring(11, 13)),
                 Number(props.myCurrentTask?.end_time!.substring(14, 16)),
-                Number(props.myCurrentTask?.end_time!.substring(17, 19))))}/>
+                Number(props.myCurrentTask?.end_time!.substring(17, 19))))} 
+             />
             </div>
             {message}
             <br />
