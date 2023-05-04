@@ -6,6 +6,7 @@ import CountDown from '../components/CountDown';
 import { TaskIsOngoingView } from '../views/TaskIsOngoing';
 import { TaskIsWaitingForParticipantsView } from '../views/TaskIsWaitingForParticipants';
 import Modal from "react-modal";
+import { MQTT_BASE } from '../main';
 
 const MessageModal = ({ content, isOpen, onClose }: any) => {
   return (
@@ -72,7 +73,7 @@ function MQTTComponent(props: MQTTComponentProps) {
   const effectCalled = useRef(false);
   const renderAfterCalled = useRef(false);
   const [val, setVal] = useState(0);
-  const client = new Client('localhost', 9001, '', 'client-id-' + Math.random());
+  const client = new Client(MQTT_BASE, 9001, '', 'client-id-' + Math.random());
 
   if (effectCalled.current) {
     renderAfterCalled.current = true;

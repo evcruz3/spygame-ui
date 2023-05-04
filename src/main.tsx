@@ -11,6 +11,7 @@ import { OpenAPI } from './client';
 // window.Buffer = window.Buffer || Buffer
 
 OpenAPI.BASE = import.meta.env.VITE_API_URL;
+export const MQTT_BASE = import.meta.env.VITE_MQTT_HOSTNAME
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

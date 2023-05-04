@@ -4,6 +4,7 @@ import { APIClient, OpenAPI, ParticipantStatusEnum, PlayerDocument, PlayerRoleEn
 import Button from "../components/Button";
 import CountDown from "../components/CountDown";
 import Chip from "../components/Chip";
+import { MQTT_BASE } from "../main";
 
 interface Props {
     symbol: TaskTypeEnum;
@@ -71,7 +72,7 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
     const effectCalled = useRef(false);
     const renderAfterCalled = useRef(false);
     const [val, setVal] = useState(0);
-    const client = new Client('localhost', 9001, '', 'client-id-' + Math.random());
+    const client = new Client(MQTT_BASE, 9001, '', 'client-id-' + Math.random());
     const mounted = useRef(false);
     const [displayAdditionalActions, setDisplayAdditionalActions] = useState<boolean>(
         props.myCurrentTask.type == TaskTypeEnum.DIAMOND && props.currentProfile.role == PlayerRoleEnum.SPY ||

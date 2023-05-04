@@ -3,6 +3,7 @@ import { useRef, useState, useEffect } from "react";
 import { TaskDocument, PlayerDocument, ParticipantStatusEnum, APIClient, OpenAPI, ApiError, TaskStatusEnum } from "../client";
 import Button from "../components/Button";
 import CountDown from "../components/CountDown";
+import { MQTT_BASE } from "../main";
 
 export function TaskIsWaitingForParticipantsView(props: {myCurrentTask: TaskDocument, setMyCurrentTask: React.Dispatch<React.SetStateAction<TaskDocument | null | undefined>>, currentProfile: PlayerDocument, participationStatus: ParticipantStatusEnum, timeStamp: Date}) {
     const apiClient = new APIClient(OpenAPI);
@@ -36,7 +37,7 @@ export function TaskIsWaitingForParticipantsView(props: {myCurrentTask: TaskDocu
     const effectCalled = useRef(false);
     const renderAfterCalled = useRef(false);
     const [val, setVal] = useState(0);
-    const client = new Client('localhost', 9001, '', 'client-id-' + Math.random());
+    const client = new Client(MQTT_BASE, 9001, '', 'client-id-' + Math.random());
     const mounted = useRef(false);
 
     if (effectCalled.current) {
