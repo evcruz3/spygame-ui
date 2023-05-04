@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Client, Message, TypedArray } from 'paho-mqtt';
-import { $GameEventDocument, APIClient, ApiError, GameEventDocument, OpenAPI, ParticipantStatusEnum, PlayerDocument, TaskDocument, TaskStatusEnum, TaskTypeEnum } from '../client';
+import { $GameEventDocument, APIClient, ApiError, GameEventDocument, OpenAPI, ParticipantStatusEnum, PlayerDocument, PlayerRoleEnum, TaskDocument, TaskStatusEnum, TaskTypeEnum } from '../client';
 import Button from '../components/Button';
 import CountDown from '../components/CountDown';
 import { TaskIsOngoingView } from '../views/TaskIsOngoing';
@@ -50,7 +50,7 @@ function MQTTComponent(props: MQTTComponentProps) {
   const apiClient = new APIClient(OpenAPI);
 
   const subscribedTopics = useRef<Set<string>>(new Set());
-  const [messages, setMessages] = useState<Array<Message>>(new Array());
+  // const [messages, setMessages] = useState<Array<Message>>(new Array());
   // const prefix = '/events/' + props.event_id
   const eventPrefix = '/events/' + props.event_id
   const playerPrefix = eventPrefix + '/players/' + props.player_id
@@ -207,8 +207,8 @@ function MQTTComponent(props: MQTTComponentProps) {
         console.log(`unknown document type`)
         console.log(payloadObject)
       }
-      messages.unshift(message)
-      setMessages(messages);
+      // messages.unshift(message)
+      // setMessages(messages);
     };
 
     
@@ -301,7 +301,7 @@ function MQTTComponent(props: MQTTComponentProps) {
         />
     <div className="container mx-auto px-4 py-8">
       
-      <div className="text-center text-lg font-bold">MQTT Messages</div>
+      <div className="text-center text-lg font-bold">{currentProfile?.role == PlayerRoleEnum.SPY ? "ELIMINATE ALL CITIZENS" : "ELIMINATE ALL SPIES"}</div>
       <div>Profile: {currentProfile?.name}</div>
       <div>Life Remaining: {currentProfile?.lives_left}</div>
       <div className={`p-4 mb-4 rounded-lg shadow-md bg-white flex flex-col items-center justify-center space-y-2`}>
@@ -311,7 +311,7 @@ function MQTTComponent(props: MQTTComponentProps) {
           : <></>
           }
       </div>
-      <div>Current Event: {currentEvent?.code}</div>
+      {/* <div>Current Event: {currentEvent?.code}</div>
       <div><Button purpose={"primary"} onClick={triggerTaskCreation}>Trigger Task Creation</Button></div>
       <div><Button purpose={"primary"} onClick={triggerTaskStart}>Trigger Task Start</Button></div>
       <div><Button purpose={"primary"} onClick={triggerTaskEnd}>Trigger Task End</Button></div>
@@ -337,7 +337,7 @@ function MQTTComponent(props: MQTTComponentProps) {
             </div>
           )
         })}
-      </div>
+      </div> */}
     </div>
     </>
   );
