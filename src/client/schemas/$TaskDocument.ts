@@ -70,9 +70,16 @@ export const $TaskDocument = {
             }],
             isRequired: true,
         },
-        allow_kill: {
+        allow_action: {
             type: 'boolean',
             description: `Allow kill, field used by diamond task, default to True`,
+            isRequired: true,
+        },
+        votes: {
+            type: 'array',
+            contains: {
+                type: 'Vote',
+            },
             isRequired: true,
         },
         _id: {

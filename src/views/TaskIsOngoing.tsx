@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { APIClient, OpenAPI, ParticipantStatusEnum, PlayerDocument, PlayerRoleEnum, TaskDocument, TaskStatusEnum, TaskTypeEnum } from "../client";
 import Button from "../components/Button";
 import CountDown from "../components/CountDown";
+import Chip from "../components/Chip";
 
 interface Props {
     symbol: TaskTypeEnum;
@@ -51,15 +52,9 @@ const getRandomSymbol = (): TaskTypeEnum => {
   
 export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurrentTask: TaskDocument, setMyCurrentTask: React.Dispatch<React.SetStateAction<TaskDocument | null | undefined>>, timeStamp: Date, onTaskFinished: (task: TaskDocument) => void}) {
     // const [type, setTaskType] = useState<TaskTypeEnum>(props.myCurrentTask.type)
-    const timeDifference = Math.floor((props.timeStamp.getTime() - new Date(Date.UTC(
-        Number(props.myCurrentTask?.start_time!.substring(0, 4)),
-        Number(props.myCurrentTask?.start_time!.substring(5, 7)) - 1,
-        Number(props.myCurrentTask?.start_time!.substring(8, 10)),
-        Number(props.myCurrentTask?.start_time!.substring(11, 13)),
-        Number(props.myCurrentTask?.start_time!.substring(14, 16)),
-        Number(props.myCurrentTask?.start_time!.substring(17, 19)))).getTime())/1000 % 60)
+    const timeDifference = Math.floor((new Date().getTime() - props.timeStamp.getTime())/1000 % 60)
     console.log("time difference: ", timeDifference)
-    const [isShuffling, setIsShuffling] = useState<boolean>(timeDifference > 7 ? false : true)
+    const [isShuffling, setIsShuffling] = useState<boolean>(timeDifference > 15 ? false : true)
     const taskTimeStamp = useRef<Date>(props.timeStamp)
     const [message, setMessage] = useState<string>('')
     // const [currentTask, setCurrentTask] = useState<TaskDocument>(props.myCurrentTask)
@@ -78,7 +73,10 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
     const [val, setVal] = useState(0);
     const client = new Client('localhost', 9001, '', 'client-id-' + Math.random());
     const mounted = useRef(false);
-    const [displayAdditionalActions, setDisplayAdditionalActions] = useState<boolean>(props.myCurrentTask.type == TaskTypeEnum.DIAMOND && props.currentProfile.role == PlayerRoleEnum.SPY)
+    const [displayAdditionalActions, setDisplayAdditionalActions] = useState<boolean>(
+        props.myCurrentTask.type == TaskTypeEnum.DIAMOND && props.currentProfile.role == PlayerRoleEnum.SPY ||
+        props.myCurrentTask.type == TaskTypeEnum.HEART && !props.myCurrentTask.votes.some(obj => (obj.player as PlayerDocument)._id === props.currentProfile._id)
+        && props.myCurrentTask.allow_action == true)
 
     if (effectCalled.current) {
         renderAfterCalled.current = true;
@@ -182,7 +180,9 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
 
     function killPlayer(player: PlayerDocument, task_code: string, requester: PlayerDocument){
         apiClient.events.killInTaskEventsEventCodeTasksTaskCodeKillPlayerIdPost(player.event_code, task_code, player._id!, requester)
-        .then((data) => console.log(`Successfully killed ${player.name}`))
+        .then((data) => {console.log(`Successfully killed ${player.name}`)
+        setDisplayAdditionalActions(false)}
+        )
         .catch((error) => console.log(`Failed to kill ${player.name}, error: `, error))
     }
 
@@ -193,14 +193,52 @@ export function TaskIsOngoingView(props: {currentProfile: PlayerDocument, myCurr
         .catch((error) => console.log(`Failed to end task, error: `, error))
     }
 
+    function voteOut(task_code: string, requester: PlayerDocument, vote_out: string){
+        apiClient.events.voteOutEventsEventCodeTasksTaskCodeVoteOutPlayerIdPost(requester.event_code, task_code, vote_out, requester)
+        .then((data) => {
+            console.log("Successfully voted")
+            setDisplayAdditionalActions(false)
+        })
+        .catch((error) => console.log("Failed to vote :", error))
+    }
+
     console.log("joined participants: ", props.myCurrentTask.participants.filter((participant) => participant.status == ParticipantStatusEnum.JOINED))
-    const additional_actions = displayAdditionalActions == true &&  props.myCurrentTask.allow_kill == true? <>
+    const additional_actions = displayAdditionalActions == true &&  props.myCurrentTask.type == TaskTypeEnum.DIAMOND? <>
         <div>Who do you want to kill?</div>
         {props.myCurrentTask.participants.filter((participant) => participant.status == ParticipantStatusEnum.JOINED).map((participant) => {
             return (<div className="flex-row">{(participant.player as PlayerDocument).name} <Button purpose={"link"} onClick={() => {killPlayer(participant.player as PlayerDocument, props.myCurrentTask.task_code, props.currentProfile)}}>Kill</Button></ div>)
         })}
         <div><Button purpose={"primary"} onClick={() => {killNone(props.myCurrentTask.task_code, props.currentProfile)}}>End Task (Don't Kill Anyone)</Button></div>
-    </> : <>
+    </> : 
+        displayAdditionalActions == true &&  props.myCurrentTask.type == TaskTypeEnum.HEART ? 
+        <>
+        <div>Choose who to vote out</div>
+        <div className="space-y-2">
+        {props.myCurrentTask.participants.filter((participant) => participant.status == ParticipantStatusEnum.JOINED).map((participant) => {
+            return (<div className="flex-row ">{(participant.player as PlayerDocument).name} - {(participant.player as PlayerDocument).lives_left} lives left 
+            
+            { displayAdditionalActions == true && <Button purpose={"secondary"} onClick={() => voteOut(props.myCurrentTask.task_code, props.currentProfile, (participant.player as PlayerDocument)._id!)}>Vote Out</Button>}
+            <br />
+            {props.myCurrentTask.votes.filter((vote) => (vote.vote as PlayerDocument)._id == (participant.player as PlayerDocument)._id).map((voter) => <Chip>{(voter.player as PlayerDocument).name}</Chip>)}
+            </ div>)
+        })}
+        </div>
+        </>
+        :   
+        props.myCurrentTask.type == TaskTypeEnum.HEART ? 
+        <>
+        <div>Choose who to vote out</div>
+        <div className="space-y-2">
+        {props.myCurrentTask.participants.filter((participant) => participant.status == ParticipantStatusEnum.JOINED).map((participant) => {
+            return (<div className="flex-row ">{(participant.player as PlayerDocument).name} - {(participant.player as PlayerDocument).lives_left} lives left 
+            <br />
+            {props.myCurrentTask.votes.filter((vote) => (vote.vote as PlayerDocument)._id == (participant.player as PlayerDocument)._id).map((voter) => <Chip>{(voter.player as PlayerDocument).name}</Chip>)}
+            </ div>)
+        })}
+        </div>
+        </>
+        :
+        <>
         <div>Current players</div>
         {props.myCurrentTask.participants.filter((participant) => participant.status == ParticipantStatusEnum.JOINED).map((participant) => {
             return (<div className="flex-row">{(participant.player as PlayerDocument).name} - {(participant.player as PlayerDocument).lives_left} lives left</ div>)

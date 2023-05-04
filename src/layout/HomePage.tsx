@@ -14,8 +14,8 @@ type FormValues = {
 };
 
 const HomePage: React.FC<Props> = ({ joinEvent }) => {
-  const [eventCodeFromStorage] = useState<string>("event code");
-  const [playerNameFromStorage] = useState<string>("player name");
+  const [eventCodeFromStorage] = useState<string>("");
+  const [playerNameFromStorage] = useState<string>("");
 
   const { register, handleSubmit, formState } = useForm<FormValues>({
     defaultValues: {
@@ -26,8 +26,8 @@ const HomePage: React.FC<Props> = ({ joinEvent }) => {
 
   const onSubmit = (data: FormValues) => {
     const { eventCode, playerName } = data;
-    useState<string>("event code");
-    useState<string>("player name");
+    // useState<string>("");
+    // useState<string>("");
     joinEvent(eventCode, playerName);
   };
 
@@ -35,48 +35,42 @@ const HomePage: React.FC<Props> = ({ joinEvent }) => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
-      >
-        <TextInput
-          label="Event Code"
-        //   name="eventCode"
-        //   onChange={register(
-        //     getRequiredValidation("Please enter the event code"),
-        //     minLengthValidation(6, "Event code must be at least 6 characters")
-        //   )}
-        //   onBlur={register()}
-          {...register("eventCode", {required: true})}
-          errors={errors}
-          flex="mb-4"
-        />
-
-        <TextInput
-          label="Player Name"
-        //   name="playerName"
-        //   onChange={register(
-        //     getRequiredValidation("Please enter your player name")
-        //   )}
-        //   onBlur={register()}
-        {...register("eventCode", {required: true})}
-          errors={errors}
-          flex="mb-6"
-        />
-
-        <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          Join Event
-        </button>
-      </form>
-
-      {eventCodeFromStorage && playerNameFromStorage && (
-        <div className="text-center">
-          You've already joined the event!
+      <div className="grid grid-cols-1 divide-y-2 bg-white shadow-md rounded px-8 py-6 gap-y-4">
+        <div>
+          <p className="pb-4 text-sm">Join Event</p>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <TextInput
+              label="Event Code"
+              {...register("eventCode", {required: true})}
+              errors={errors}
+              flex="mb-4"
+            />
+            <TextInput
+              label="Player Name"
+              {...register("playerName", {required: true})}
+              errors={errors}
+              flex="mb-6"
+            />
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Join Event
+            </button>
+          </form>
+          {eventCodeFromStorage && playerNameFromStorage && (
+          <div className="text-center">
+            You've already joined the event!
+          </div>
+        )}
         </div>
-      )}
+        <div className="pt-4">
+          <p className="pb-4 text-sm">or Create Event</p>
+          <button type="button" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Create Event
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

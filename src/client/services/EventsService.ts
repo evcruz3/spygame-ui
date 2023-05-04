@@ -118,6 +118,37 @@ export class EventsService {
     }
 
     /**
+     * Vote Out
+     * @param eventCode
+     * @param taskCode
+     * @param playerId
+     * @param requestBody
+     * @returns TaskDocument Successful Response
+     * @throws ApiError
+     */
+    public voteOutEventsEventCodeTasksTaskCodeVoteOutPlayerIdPost(
+        eventCode: string,
+        taskCode: string,
+        playerId: string,
+        requestBody: PlayerDocument,
+    ): CancelablePromise<TaskDocument> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/events/{event_code}/tasks/{task_code}/vote_out/{player_id}',
+            path: {
+                'event_code': eventCode,
+                'task_code': taskCode,
+                'player_id': playerId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Kill In Task
      * @param eventCode
      * @param taskCode

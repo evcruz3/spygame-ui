@@ -5,6 +5,31 @@ import Button from '../components/Button';
 import CountDown from '../components/CountDown';
 import { TaskIsOngoingView } from '../views/TaskIsOngoing';
 import { TaskIsWaitingForParticipantsView } from '../views/TaskIsWaitingForParticipants';
+import Modal from "react-modal";
+
+const MessageModal = ({ content, isOpen, onClose }: any) => {
+  return (
+    <Modal isOpen={isOpen} onRequestClose={onClose} ariaHideApp={false}>
+      <div className='flex text-center flex-col items-center justify-between h-full'>
+        <div className="flex-basis-10">
+          <h3 className="">{content.title}</h3>
+        </div>
+        <div className="flex-basis-80 text-3xl text-red-600">
+          <p>{content.body}</p>
+        </div>
+        <div className="flex-basis-10">
+          <Button purpose={"primary"} onClick={onClose}>OK</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+type MessageContent = {
+  title: string;
+  body: string;
+};
+
 // import { useTransition, animated } from 'react-spring';
 
 
@@ -35,6 +60,12 @@ function MQTTComponent(props: MQTTComponentProps) {
   const [currentEvent, setCurrentEvent] = useState<GameEventDocument>()
   const [participationStatus, setParticipationStatus] = useState<ParticipantStatusEnum | null>()
   const taskTimeStamp = useRef<Date>(new Date())
+  const profileTimeStamp = useRef<Date>(new Date())
+  const [messageContent, setMessageContent] = useState<MessageContent>({
+    title: "",
+    body: "",
+  });
+  const [modalOpen, setModalOpen] = useState(false);
   // `
 
   const destroyFunc = useRef<void>();
@@ -50,7 +81,9 @@ function MQTTComponent(props: MQTTComponentProps) {
   // Ensure that upload of sequences with no seqid are only done ONCE
   var connectOnce = () => {
     apiClient.events.getEventPlayerInfoEventsEventCodePlayersPlayerIdGet(props.event_id, props.player_id)
-    .then((data) => setCurrentProfile(data))
+    .then((data) => {setCurrentProfile(data)
+      profileTimeStamp.current = new Date()
+    })
     .catch((error) => console.log("error fetching profile: ", error))
 
     apiClient.events.getCurrentTaskOfPlayerEventsEventCodePlayersPlayerIdCurrentTaskGet(props.event_id, props.player_id)
@@ -145,8 +178,25 @@ function MQTTComponent(props: MQTTComponentProps) {
       }
       else if ("player_document" in payloadObject){
         // console.log("isPlayerDocument")
-        if(payloadObject.player_document._id == props.player_id)
-          setCurrentProfile(payloadObject.player_document as PlayerDocument)
+        if(payloadObject.player_document._id == props.player_id){
+          const timeStamp = new Date(Date.UTC(
+            Number(payloadObject.timestamp!.substring(0, 4)),
+            Number(payloadObject.timestamp!.substring(5, 7)) - 1,
+            Number(payloadObject.timestamp!.substring(8, 10)),
+            Number(payloadObject.timestamp!.substring(11, 13)),
+            Number(payloadObject.timestamp!.substring(14, 16)),
+            Number(payloadObject.timestamp!.substring(17, 19))))
+          
+          if (timeStamp >= profileTimeStamp.current){
+        
+            setCurrentProfile(payloadObject.player_document as PlayerDocument)
+            setMessageContent({
+              title: "Life Update",
+              body: payloadObject.message,
+            });
+            setModalOpen(true);
+          }
+        }
       }
       else if ("event_document" in payloadObject){
         // console.log("isEventDocument")
@@ -159,6 +209,8 @@ function MQTTComponent(props: MQTTComponentProps) {
       messages.unshift(message)
       setMessages(messages);
     };
+
+    
 
     const client_params = {
       onSuccess: () => {
@@ -186,6 +238,14 @@ function MQTTComponent(props: MQTTComponentProps) {
     client.onConnectionLost = (error) => {console.log("Connection lost: ", error)};
     client.onMessageArrived = onMessageArrived;
   }
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
+  const updateMessageContent = (newContent: MessageContent) => {
+    setMessageContent(newContent);
+  };
 
   useEffect(() => {
     // only execute the effect first time around
@@ -229,8 +289,17 @@ function MQTTComponent(props: MQTTComponentProps) {
 
   console.log("Current participation status: ", participationStatus)
 
+  Modal.setAppElement(document.getElementById('root')!);
+
   return (
+    <>
+    <MessageModal
+          content={messageContent}
+          isOpen={modalOpen}
+          onClose={closeModal}
+        />
     <div className="container mx-auto px-4 py-8">
+      
       <div className="text-center text-lg font-bold">MQTT Messages</div>
       <div>Profile: {currentProfile?.name}</div>
       <div>Life Remaining: {currentProfile?.lives_left}</div>
@@ -269,6 +338,7 @@ function MQTTComponent(props: MQTTComponentProps) {
         })}
       </div>
     </div>
+    </>
   );
 };
 

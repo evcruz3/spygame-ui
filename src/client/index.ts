@@ -20,6 +20,7 @@ export type { TaskDocument } from './models/TaskDocument';
 export { TaskStatusEnum } from './models/TaskStatusEnum';
 export { TaskTypeEnum } from './models/TaskTypeEnum';
 export type { ValidationError } from './models/ValidationError';
+export type { Vote } from './models/Vote';
 
 export { $GameEventDocument } from './schemas/$GameEventDocument';
 export { $HTTPValidationError } from './schemas/$HTTPValidationError';
@@ -32,6 +33,7 @@ export { $TaskDocument } from './schemas/$TaskDocument';
 export { $TaskStatusEnum } from './schemas/$TaskStatusEnum';
 export { $TaskTypeEnum } from './schemas/$TaskTypeEnum';
 export { $ValidationError } from './schemas/$ValidationError';
+export { $Vote } from './schemas/$Vote';
 
 export { DefaultService } from './services/DefaultService';
 export { EventsService } from './services/EventsService';

@@ -5,6 +5,7 @@
 import type { Participant } from './Participant';
 import type { TaskStatusEnum } from './TaskStatusEnum';
 import type { TaskTypeEnum } from './TaskTypeEnum';
+import type { Vote } from './Vote';
 
 /**
  * Document Mapping class.
@@ -56,7 +57,11 @@ export type TaskDocument = {
     /**
      * Allow kill, field used by diamond task, default to True
      */
-    allow_kill: boolean;
+    allow_action: boolean;
+    /**
+     * The votes of the players in the task
+     */
+    votes: Array<Vote>;
     _id?: string;
 };
 
