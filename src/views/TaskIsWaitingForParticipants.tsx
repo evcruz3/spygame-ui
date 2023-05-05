@@ -4,6 +4,12 @@ import { TaskDocument, PlayerDocument, ParticipantStatusEnum, APIClient, OpenAPI
 import Button from "../components/Button";
 import CountDown from "../components/CountDown";
 import { MQTT_BASE } from "../main";
+import { useForm } from "react-hook-form";
+import TextInput from "../components/TextInput";
+
+type FormValues = {
+    taskCode: string
+};
 
 export function TaskIsWaitingForParticipantsView(props: {myCurrentTask: TaskDocument, setMyCurrentTask: React.Dispatch<React.SetStateAction<TaskDocument | null | undefined>>, currentProfile: PlayerDocument, participationStatus: ParticipantStatusEnum, timeStamp: Date}) {
     const apiClient = new APIClient(OpenAPI);
@@ -132,9 +138,27 @@ export function TaskIsWaitingForParticipantsView(props: {myCurrentTask: TaskDocu
             client.disconnect()
         };
     }, []);
-    
+
+    const isLeader = props.currentProfile._id == props.myCurrentTask.participants[0].player._id || props.currentProfile._id == props.myCurrentTask.participants[1].player._id;
+    // console.log("leaders: ", props.myCurrentTask.participants[0].player.name, props.myCurrentTask.participants[1].player.name)
+
+    const { register, handleSubmit, formState } = useForm<FormValues>({
+        defaultValues: {
+          taskCode: isLeader ? props.myCurrentTask.task_code : ""
+        },
+      });
+
+    const onSubmit = (data: FormValues) => {
+    const { taskCode } = data;
+    // useState<string>("");
+    // useState<string>("");
+    joinTask(taskCode)
+    };
+
     return <>
       <h1>A TASK IS ABOUT TO BEGIN</h1>
+      {isLeader ? `The task code is ${props.myCurrentTask.task_code}. You may share it to the people you like to be part of the task` : `${props.myCurrentTask.participants[0].player.name} and ${props.myCurrentTask.participants[1].player.name} have the task codes`}
+      {/* {message} */}
         <div className="text-3xl text-red-600">
         <CountDown targetDate={new Date(Date.UTC(
     Number(props.myCurrentTask?.join_until!.substring(0, 4)),
@@ -155,15 +179,28 @@ export function TaskIsWaitingForParticipantsView(props: {myCurrentTask: TaskDocu
             )
           }
           
-          <div className="flex flex-col items-center justify-center space-y-2 p-4"> 
+          <div className="flex flex-col items-center justify-center content-center space-y-2 p-4 mt-2"> 
   
           {props.currentProfile != null
             && props.participationStatus == ParticipantStatusEnum.WAITING
             ?
-                <><Button purpose={"danger"} onClick={
-                    () => joinTask(props.myCurrentTask?.task_code!)}> Join Task</Button>
-                <Button purpose={"light"} onClick={
-                    () => notJoinTask(props.myCurrentTask?.task_code!)}> Skip Task</Button>
+                <>
+                <div className="flex justify-center content-center">
+                <form onSubmit={handleSubmit(onSubmit)}>
+                <TextInput
+                    label="Task Code"
+                    {...register("taskCode", {required: true})}
+                    errors={formState.errors}
+                    flex="w-xs"
+                />
+                </form>
+                </div>
+                <div>
+                <Button purpose={"danger"} onClick={handleSubmit(onSubmit)}> Join Task</Button>
+                </div>
+                <div>
+                    <Button purpose={"light"} onClick={() => notJoinTask(props.myCurrentTask?.task_code!)}> Skip Task</Button>
+                </div>
                 <div className="text-xs p-2">Skipping a task deducts a life from you</div>
                 </>
             :

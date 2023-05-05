@@ -50,7 +50,7 @@ function MQTTComponent(props: MQTTComponentProps) {
   const apiClient = new APIClient(OpenAPI);
 
   const subscribedTopics = useRef<Set<string>>(new Set());
-  // const [messages, setMessages] = useState<Array<Message>>(new Array());
+  const [messages, setMessages] = useState<Array<Message>>(new Array());
   // const prefix = '/events/' + props.event_id
   const eventPrefix = '/events/' + props.event_id
   const playerPrefix = eventPrefix + '/players/' + props.player_id
@@ -302,16 +302,18 @@ function MQTTComponent(props: MQTTComponentProps) {
     <div className="container mx-auto px-4 py-8">
       
       <div className="text-center text-lg font-bold">{currentProfile?.role == PlayerRoleEnum.SPY ? "ELIMINATE ALL CITIZENS" : "ELIMINATE ALL SPIES"}</div>
+      <div className="mb-4">
       <div>Profile: {currentProfile?.name}</div>
       <div>Life Remaining: {currentProfile?.lives_left}</div>
+      </div>
       <div className={`p-4 mb-4 rounded-lg shadow-md bg-white flex flex-col items-center justify-center space-y-2`}>
           {myCurrentTask?.status == TaskStatusEnum.WAITING_FOR_PARTICIPANTS ? <TaskIsWaitingForParticipantsView myCurrentTask={myCurrentTask} setMyCurrentTask={setMyCurrentTask!} currentProfile={currentProfile!} participationStatus={participationStatus!} timeStamp={taskTimeStamp.current} />:
           myCurrentTask?.status == TaskStatusEnum.ONGOING && participationStatus == ParticipantStatusEnum.JOINED? 
             <TaskIsOngoingView currentProfile={currentProfile!} myCurrentTask={myCurrentTask} setMyCurrentTask={setMyCurrentTask} timeStamp={taskTimeStamp.current} onTaskFinished={onTaskFinished}/>
-          : <></>
+          : <>Waiting for new task...</>
           }
       </div>
-      {/* <div>Current Event: {currentEvent?.code}</div>
+      <div>Current Event: {currentEvent?.code}</div>
       <div><Button purpose={"primary"} onClick={triggerTaskCreation}>Trigger Task Creation</Button></div>
       <div><Button purpose={"primary"} onClick={triggerTaskStart}>Trigger Task Start</Button></div>
       <div><Button purpose={"primary"} onClick={triggerTaskEnd}>Trigger Task End</Button></div>
@@ -337,7 +339,7 @@ function MQTTComponent(props: MQTTComponentProps) {
             </div>
           )
         })}
-      </div> */}
+      </div>
     </div>
     </>
   );
