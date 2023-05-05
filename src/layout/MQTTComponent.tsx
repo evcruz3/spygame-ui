@@ -50,7 +50,7 @@ function MQTTComponent(props: MQTTComponentProps) {
   const apiClient = new APIClient(OpenAPI);
 
   const subscribedTopics = useRef<Set<string>>(new Set());
-  const [messages, setMessages] = useState<Array<Message>>(new Array());
+  // const [messages, setMessages] = useState<Array<Message>>(new Array());
   // const prefix = '/events/' + props.event_id
   const eventPrefix = '/events/' + props.event_id
   const playerPrefix = eventPrefix + '/players/' + props.player_id
@@ -313,7 +313,7 @@ function MQTTComponent(props: MQTTComponentProps) {
           : <>Waiting for new task...</>
           }
       </div>
-      <div>Current Event: {currentEvent?.code}</div>
+      {/* <div>Current Event: {currentEvent?.code}</div>
       <div><Button purpose={"primary"} onClick={triggerTaskCreation}>Trigger Task Creation</Button></div>
       <div><Button purpose={"primary"} onClick={triggerTaskStart}>Trigger Task Start</Button></div>
       <div><Button purpose={"primary"} onClick={triggerTaskEnd}>Trigger Task End</Button></div>
@@ -339,7 +339,7 @@ function MQTTComponent(props: MQTTComponentProps) {
             </div>
           )
         })}
-      </div>
+      </div> */}
     </div>
     </>
   );
