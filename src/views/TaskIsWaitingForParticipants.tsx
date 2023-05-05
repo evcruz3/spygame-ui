@@ -139,7 +139,7 @@ export function TaskIsWaitingForParticipantsView(props: {myCurrentTask: TaskDocu
         };
     }, []);
 
-    const isLeader = props.currentProfile._id == props.myCurrentTask.participants[0].player._id || props.currentProfile._id == props.myCurrentTask.participants[1].player._id;
+    const isLeader = props.currentProfile._id == (props.myCurrentTask.participants[0].player as PlayerDocument)._id || props.currentProfile._id == (props.myCurrentTask.participants[1].player as PlayerDocument)._id;
     // console.log("leaders: ", props.myCurrentTask.participants[0].player.name, props.myCurrentTask.participants[1].player.name)
 
     const { register, handleSubmit, formState } = useForm<FormValues>({
@@ -157,7 +157,7 @@ export function TaskIsWaitingForParticipantsView(props: {myCurrentTask: TaskDocu
 
     return <>
       <h1>A TASK IS ABOUT TO BEGIN</h1>
-      {isLeader ? `The task code is ${props.myCurrentTask.task_code}. You may share it to the people you like to be part of the task` : `${props.myCurrentTask.participants[0].player.name} and ${props.myCurrentTask.participants[1].player.name} have the task codes`}
+      {isLeader ? `The task code is ${props.myCurrentTask.task_code}. You may share it to the people you like to be part of the task` : `${(props.myCurrentTask.participants[0].player as PlayerDocument).name} and ${(props.myCurrentTask.participants[1].player as PlayerDocument).name} have the task codes`}
       {/* {message} */}
         <div className="text-3xl text-red-600">
         <CountDown targetDate={new Date(Date.UTC(
